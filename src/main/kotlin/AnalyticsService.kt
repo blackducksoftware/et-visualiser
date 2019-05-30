@@ -55,7 +55,7 @@ class AnalyticsService {
             .setExpression("ga:sessions")
             .setAlias("sessions")
 
-        val pageTitle = Dimension().setName("ga:pageTitle")
+        val pageTitle = Dimension().setName("ga:dimension6")
 
         // Create the ReportRequest object.
         val request = ReportRequest()

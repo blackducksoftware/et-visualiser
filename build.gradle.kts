@@ -13,7 +13,9 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.google.apis:google-api-services-analyticsreporting:v4-rev143-1.25.0")
+    implementation("com.google.apis:google-api-services-analyticsreporting:v4-rev20190318-1.28.0")
+    implementation("com.google.http-client:google-http-client-gson:1.29.1")
+//    implementation("com.google.api-client:google-api-client-extensions:1.6.0-beta")
 }
 
 tasks.withType<KotlinCompile> {

@@ -1,7 +1,21 @@
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
-class HelloWorldApp : App(HelloWorld::class, Styles::class)
+class HelloWorldApp : App(HelloWorld::class, Styles::class) {
+    init {
+        val analyticsService = AnalyticsService()
+
+        try {
+            val analyticsReporting = analyticsService.initializeAnalyticsReporting()
+
+            val response = analyticsService.getReport(analyticsReporting)
+            analyticsService.printResponse(response)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+}
+
 
 class Styles : Stylesheet() {
     init {

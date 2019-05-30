@@ -13,8 +13,9 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.google.apis:google-api-services-analyticsreporting:v4-rev143-1.25.0")
     implementation("no.tornado:tornadofx:1.7.17")
+    implementation("com.google.apis:google-api-services-analyticsreporting:v4-rev20190318-1.28.0")
+    implementation("com.google.http-client:google-http-client-gson:1.29.1")
 }
 
 tasks.withType<KotlinCompile> {

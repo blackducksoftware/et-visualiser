@@ -13,8 +13,9 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation("com.google.apis:google-api-services-analyticsreporting:v4-rev143-1.25.0")
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
-}
+} 

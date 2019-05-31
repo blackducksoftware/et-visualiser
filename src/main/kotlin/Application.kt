@@ -1,3 +1,5 @@
+import channels.ChannelHitEvent
+import detectors.*
 import kravis.*
 import kravis.render.Docker
 
@@ -13,9 +15,9 @@ class Application {
 
     init {
         val analyticsService = AnalyticsService()
-        val query = CustomerEventService(analyticsService)
+        val query = DetectorEventService(analyticsService)
 
-        data.addAll(query.retrieveEvents())
+        data.addAll(query.retreiveEvents())
     }
 
     fun run() {
@@ -32,12 +34,12 @@ class Application {
     }
 
     fun getDetectorCustomers(): Collection<CustomersAndDateByDetector> {
-        val customerEventProcessor = CustomerEventProcessor()
+        val customerEventProcessor = DetectorAggregateProcessor()
         return customerEventProcessor.aggregateUniqueCustomerAndDate(data)
     }
 
     fun getDetectorHits(): Collection<HitsByDetector> {
-        val customerEventProcessor = CustomerEventProcessor()
+        val customerEventProcessor = DetectorAggregateProcessor()
         return customerEventProcessor.aggregateCustomerHits(data)
     }
 }

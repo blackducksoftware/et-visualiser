@@ -1,4 +1,6 @@
-class CustomerEventProcessor() {
+package detectors
+
+class DetectorAggregateProcessor() {
 
     fun aggregateCustomerHits(events: Collection<CustomerDetectorHitEvent>): Collection<HitsByDetector> {
         val aggregate = mutableMapOf<String, Int>()

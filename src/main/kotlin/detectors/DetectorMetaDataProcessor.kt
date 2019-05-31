@@ -1,12 +1,13 @@
-import com.beust.klaxon.JsonObject
+package detectors
+
+import Dimensions
+import StructuredAnalytic
 import com.beust.klaxon.Klaxon
-import com.beust.klaxon.lookup
-import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse;
 import java.io.StringReader
 
-class MetaDataPreProcessor {
+class DetectorMetaDataProcessor {
 
-    fun findMetaData(analytic: StructuredAnalytic): MetaData? {
+    fun findMetaData(analytic: StructuredAnalytic): DetectorMetaData? {
         if (analytic.dimensions.containsKey(Dimensions.META_DATA.id)) {
             val metadataPayload = analytic.dimensions.get(Dimensions.META_DATA.id)!!
             val metadata = parseMetaData(metadataPayload);
@@ -15,7 +16,7 @@ class MetaDataPreProcessor {
         return null;
     }
 
-    fun parseMetaData(metadataJson: String): MetaData? {
+    fun parseMetaData(metadataJson: String): DetectorMetaData? {
 
         val json = Klaxon().parseJsonObject(StringReader(metadataJson))
         val detectors = mutableListOf<String>()
@@ -36,9 +37,9 @@ class MetaDataPreProcessor {
             }
         }
 
-        return MetaData(detectors, detectorTimings)
+        return DetectorMetaData(detectors, detectorTimings)
     }
 }
 
-data class MetaData (val detectors: List<String>, val detectorTimings: Map<String, String>)
+data class DetectorMetaData (val detectors: List<String>, val detectorTimings: Map<String, String>)
 

@@ -1,8 +1,22 @@
-class CustomerEventService(val analyticsService: AnalyticsService) {
+package detectors
+
+import AnalyticsProcessor
+import AnalyticsRequest
+import AnalyticsService
+import Dimensions
+import Metrics
+import StructuredAnalytics
+
+class DetectorEventService(val analyticsService: AnalyticsService) {
 
     fun retreiveEvents(): Collection<CustomerDetectorHitEvent> {
 
-        var request = AnalyticsRequest("2019-05-24", "2019-05-30", setOf(Dimensions.META_DATA, Dimensions.DATE, Dimensions.HOST_URL), setOf(Metrics.HITS));
+        var request = AnalyticsRequest(
+            "2019-05-24",
+            "2019-05-30",
+            setOf(Dimensions.META_DATA, Dimensions.DATE, Dimensions.HOST_URL),
+            setOf(Metrics.HITS)
+        );
         var reports = analyticsService.executeAll(request)
 
         var data = AnalyticsProcessor().processReports(reports)
@@ -14,7 +28,7 @@ class CustomerEventService(val analyticsService: AnalyticsService) {
 
     private fun parseEvents(structuredAnalytics: StructuredAnalytics): Collection<CustomerDetectorHitEvent> {
         val events = mutableListOf<CustomerDetectorHitEvent>()
-        val metaDataPreProcessor = MetaDataPreProcessor()
+        val metaDataPreProcessor = DetectorMetaDataProcessor()
 
         fun emit(detector: String, url: String, date: String, hits: Int) {
             events.add(CustomerDetectorHitEvent(detector, url, date, hits))

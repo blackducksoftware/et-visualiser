@@ -56,7 +56,7 @@ class AnalyticsService {
             .setExpression("ga:sessions")
             .setAlias("sessions")
 
-        val pageTitle = Dimension().setName("ga:dimension6")
+        val pageTitle = Dimension().setName(CustomDimensions.META_DATA.dimensionName)
 
         // Create the ReportRequest object.
         val request = ReportRequest()
@@ -78,44 +78,4 @@ class AnalyticsService {
         return service.reports().batchGet(getReport).execute()
     }
 
-    /**
-     * Parses and prints the Analytics Reporting API V4 response.
-     *
-     * @param response An Analytics Reporting API V4 response.
-     */
-    fun printResponse(response: GetReportsResponse) {
-
-        for (report in response.reports) {
-            val header = report.columnHeader
-            val dimensionHeaders = header.dimensions
-            val metricHeaders = header.metricHeader.metricHeaderEntries
-            val rows = report.data.rows
-
-            if (rows == null) {
-                println("No data found for $VIEW_ID")
-                return
-            }
-
-            for (row in rows) {
-                val dimensions = row.dimensions
-                val metrics = row.metrics
-
-                var i = 0
-                while (i < dimensionHeaders.size && i < dimensions.size) {
-                    println(dimensionHeaders[i] + ": " + dimensions[i])
-                    i++
-                }
-
-                for (j in metrics.indices) {
-                    print("Date Range ($j): ")
-                    val values = metrics[j]
-                    var k = 0
-                    while (k < values.getValues().size && k < metricHeaders.size) {
-                        println(metricHeaders[k].name + ": " + values.getValues()[k])
-                        k++
-                    }
-                }
-            }
-        }
-    }
 }

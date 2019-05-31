@@ -47,11 +47,13 @@ class PieChartController : Controller() {
 
         val metadataProcessor = BomToolTypeProcessor()
         val analyticsService = AnalyticsService()
+        val analyticsProcessor = AnalyticsProcessor();
 
         val analyticsReporting = analyticsService.initializeAnalyticsReporting()
         val response = analyticsService.getReport(analyticsReporting)
-        analyticsService.printResponse(response)
-        val processedResponse = metadataProcessor.processResponse(response)
+        val structuredAnalytics = analyticsProcessor.processResponse(response);
+
+        val processedResponse = metadataProcessor.processResponse(structuredAnalytics)
 
         data.addAll(processedResponse)
         initialized = true

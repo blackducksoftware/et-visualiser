@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("no.tornado:tornadofx:1.7.17")
+    implementation("com.github.holgerbrandl:kravis:0.5")
     implementation("com.google.apis:google-api-services-analyticsreporting:v4-rev20190318-1.28.0")
     implementation("com.google.http-client:google-http-client-gson:1.29.1")
     implementation("com.beust:klaxon:5.0.5")
@@ -22,4 +22,4 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
-} 
+}

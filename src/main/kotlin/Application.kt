@@ -24,40 +24,52 @@ class HelloWorld : View() {
     private val controller: PieChartController by inject()
 
     override val root = hbox {
-        piechart("Detector usage: 1 Week") {
-            controller.getData().forEach {
+        piechart("Detector customers: 1 Week") {
+            controller.getDetectorCustomers().forEach {
                 if (it == null) {
                     return@forEach
                 }
-                data("${it.type}:${it.count}", it.count.toDouble())
+                data("${it.detector}:${it.customers}", it.customers.toDouble())
+            }
+        }
+
+        piechart("Detector events: 1 Week") {
+            controller.getDetectorHits().forEach {
+                if (it == null) {
+                    return@forEach
+                }
+                data("${it.detector}:${it.hits}", it.hits.toDouble())
             }
         }
     }
 }
 
 class PieChartController : Controller() {
-    private val data: MutableCollection<BomToolStat?> = mutableListOf()
+    private val data: MutableCollection<CustomerDetectorHitEvent> = mutableListOf()
 
     private var initialized = false
 
-    fun getData(): Collection<BomToolStat?> {
+    fun getData(): Collection<CustomerDetectorHitEvent> {
         if (initialized) {
             return data
         }
 
-        val metadataProcessor = BomToolTypeProcessor()
         val analyticsService = AnalyticsService()
-        val analyticsProcessor = AnalyticsProcessor();
+        val query = CustomerEventService(analyticsService);
 
-        val analyticsReporting = analyticsService.initializeAnalyticsReporting()
-        val response = analyticsService.getReport(analyticsReporting)
-        val structuredAnalytics = analyticsProcessor.processResponse(response);
-
-        val processedResponse = metadataProcessor.processResponse(structuredAnalytics)
-
-        data.addAll(processedResponse)
+        data.addAll(query.retreiveEvents())
         initialized = true
 
         return data
+    }
+
+    fun getDetectorCustomers(): Collection<CustomersByDetector> {
+        val customerEventProcessor = CustomerEventProcessor()
+        return customerEventProcessor.aggregateUniqueCustomer(getData())
+    }
+
+    fun getDetectorHits(): Collection<HitsByDetector> {
+        val customerEventProcessor = CustomerEventProcessor()
+        return customerEventProcessor.aggregateCustomerHits(getData())
     }
 }

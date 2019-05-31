@@ -11,71 +11,59 @@ import java.security.GeneralSecurityException
 import java.util.*
 
 
-class AnalyticsService {
+class AnalyticsService// Construct the Analytics Reporting service object.
+@Throws(GeneralSecurityException::class, IOException::class) constructor() {
     private val KEY_FILE_LOCATION = System.getenv("keyfile")
     private val VIEW_ID = "172593710"
     private val APPLICATION_NAME = "ET-Visualizer"
     private val JSON_FACTORY = GsonFactory.getDefaultInstance()
 
-    /**
-     * Initializes an Analytics Reporting API V4 service object.
-     *
-     * @return An authorized Analytics Reporting API V4 service object.
-     * @throws IOException
-     * @throws GeneralSecurityException
-     */
-    @Throws(GeneralSecurityException::class, IOException::class)
-    fun initializeAnalyticsReporting(): AnalyticsReporting {
+    private val analyticsReporting: AnalyticsReporting;
 
+    init {
         val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
         val credential = GoogleCredential
             .fromStream(FileInputStream(KEY_FILE_LOCATION))
             .createScoped(AnalyticsReportingScopes.all())
 
-        // Construct the Analytics Reporting service object.
-        return AnalyticsReporting.Builder(httpTransport, JSON_FACTORY, credential)
+        analyticsReporting = AnalyticsReporting.Builder(httpTransport, JSON_FACTORY, credential)
             .setApplicationName(APPLICATION_NAME).build()
     }
 
-    /**
-     * Queries the Analytics Reporting API V4.
-     *
-     * @param service An authorized Analytics Reporting API V4 service object.
-     * @return GetReportResponse The Analytics Reporting API V4 response.
-     * @throws IOException
-     */
     @Throws(IOException::class)
-    fun getReport(service: AnalyticsReporting): GetReportsResponse {
-        // Create the DateRange object.
+    fun executeRequest(request: AnalyticsRequest): GetReportsResponse {
         val dateRange = DateRange()
-        dateRange.startDate = "7DaysAgo"
-        dateRange.endDate = "today"
+        dateRange.startDate = request.from
+        dateRange.endDate = request.to
 
-        // Create the Metrics object.
-        val sessions = Metric()
-            .setExpression("ga:sessions")
-            .setAlias("sessions")
+        val metrics = mutableListOf<Metric>();
+        for (metric in request.metrics){
+            val gaMetric = Metric()
+                .setExpression(metric.id)
+                .setAlias(metric.alias)
+            metrics.add(gaMetric)
+        }
 
-        val pageTitle = Dimension().setName(CustomDimensions.META_DATA.dimensionName)
+        val dimensions = mutableListOf<Dimension>();
+        for (dimension in request.dimensions){
+            val gaDimension = Dimension().setName(dimension.id)
+            dimensions.add(gaDimension)
+        }
 
-        // Create the ReportRequest object.
         val request = ReportRequest()
             .setViewId(VIEW_ID)
             .setDateRanges(Arrays.asList(dateRange))
-            .setMetrics(Arrays.asList<Metric>(sessions))
-            .setDimensions(Arrays.asList<Dimension>(pageTitle))
+            .setMetrics(metrics)
+            .setDimensions(dimensions)
 
-        val requests = ArrayList<ReportRequest>()
-        requests.add(request)
+        val report = GetReportsRequest()
+            .setReportRequests(listOf(request))
 
-        // Create the GetReportsRequest object.
-        val getReport = GetReportsRequest()
-            .setReportRequests(requests)
+        return analyticsReporting.reports().batchGet(report).execute()
 
-        // Call the batchGet method.
-
-        // Return the response.
-        return service.reports().batchGet(getReport).execute()
     }
+}
+
+data class AnalyticsRequest(val from: String, val to: String, val dimensions: Set<Dimensions>, val metrics: Set<Metrics>) {
 
 }

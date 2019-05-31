@@ -6,7 +6,15 @@ import java.io.StringReader
 
 class MetaDataPreProcessor {
 
-    fun preprocessMetaData(metadataJson: String): MetaData? {
+    fun findMetaData(analytic: StructuredAnalytic): MetaData? {
+        if (analytic.dimensions.containsKey(Dimensions.META_DATA.id)) {
+            val metadataPayload = analytic.dimensions.get(Dimensions.META_DATA.id)!!
+            return parseMetaData(metadataPayload)
+        }
+        return null;
+    }
+
+    fun parseMetaData(metadataJson: String): MetaData? {
 
         val json = Klaxon().parseJsonObject(StringReader(metadataJson))
         val detectors = mutableListOf<String>()

@@ -55,7 +55,7 @@ class PieChartController : Controller() {
         }
 
         val analyticsService = AnalyticsService()
-        val query = CustomerEventService(analyticsService);
+        val query = CustomerEventService(analyticsService)
 
         data.addAll(query.retreiveEvents())
         initialized = true
@@ -63,7 +63,7 @@ class PieChartController : Controller() {
         return data
     }
 
-    fun getDetectorCustomers(): Collection<CustomersByDetector> {
+    fun getDetectorCustomers(): Collection<CustomersAndDateByDetector> {
         val customerEventProcessor = CustomerEventProcessor()
         return customerEventProcessor.aggregateUniqueCustomer(getData())
     }

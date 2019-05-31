@@ -1,11 +1,11 @@
-class CustomerEventService(val analyticsService: AnalyticsService) {
+class CustomerEventService(private val analyticsService: AnalyticsService) {
 
-    fun retreiveEvents(): Collection<CustomerDetectorHitEvent> {
+    fun retrieveEvents(): Collection<CustomerDetectorHitEvent> {
 
-        var request = AnalyticsRequest("7DaysAgo", "today", setOf(Dimensions.META_DATA, Dimensions.HOST_URL), setOf(Metrics.HITS));
-        var response = analyticsService.executeRequest(request)
+        val request = AnalyticsRequest("7DaysAgo", "today", setOf(Dimensions.META_DATA, Dimensions.HOST_URL, Dimensions.DATE), setOf(Metrics.HITS));
+        val response = analyticsService.executeRequest(request)
 
-        var data = AnalyticsProcessor().processResponse(response)
+        val data = AnalyticsProcessor().processResponse(response)
         return parseEvents(data)
 
     }
@@ -20,8 +20,8 @@ class CustomerEventService(val analyticsService: AnalyticsService) {
 
         for (analytic in structuredAnalytics.analytics) {
             val metaData = metaDataPreProcessor.findMetaData(analytic)
-            if (metaData != null){
-                for (type in metaData.detectors){
+            if (metaData != null) {
+                for (type in metaData.detectors) {
                     val url = analytic.dimensions.getOrDefault(Dimensions.HOST_URL.id, "Unknown")
                     val date = analytic.dimensions.getOrDefault(Dimensions.DATE.id, "Unknown")
                     val hitStr = analytic.metrics.getOrDefault(Metrics.HITS.alias, "0")

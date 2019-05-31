@@ -1,4 +1,3 @@
-import channels.ChannelHitEvent
 import detectors.*
 import kravis.*
 import kravis.render.Docker

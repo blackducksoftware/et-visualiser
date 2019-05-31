@@ -1,5 +1,4 @@
 import channels.*
-import detectors.*
 import javafx.scene.text.FontWeight
 import tornadofx.*
 
@@ -20,26 +19,18 @@ class Styles : Stylesheet() {
     }
 }
 
-data class EricActivity(val name: String, val value: Double)
-
 class UIApplicationView : View() {
     private val controller: PieChartController by inject()
 
     override val root = hbox {
         piechart("Alert customers: 1 Week") {
             controller.getDetectorCustomers().forEach {
-                if (it == null) {
-                    return@forEach
-                }
                 data("${it.channel}:${it.customers}", it.customers.toDouble())
             }
         }
 
         piechart("Alert events: 1 Week") {
             controller.getDetectorHits().forEach {
-                if (it == null) {
-                    return@forEach
-                }
                 data("${it.channel}:${it.hits}", it.hits.toDouble())
             }
         }
@@ -51,7 +42,7 @@ class PieChartController : Controller() {
 
     private var initialized = false
 
-    fun getChannelData(): Collection<ChannelHitEvent> {
+    private fun getChannelData(): Collection<ChannelHitEvent> {
         if (initialized) {
             return data
         }

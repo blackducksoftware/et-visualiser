@@ -2,10 +2,12 @@ class CustomerEventService(val analyticsService: AnalyticsService) {
 
     fun retreiveEvents(): Collection<CustomerDetectorHitEvent> {
 
-        var request = AnalyticsRequest("7DaysAgo", "today", setOf(Dimensions.META_DATA, Dimensions.HOST_URL), setOf(Metrics.HITS));
-        var response = analyticsService.executeRequest(request)
+        var request = AnalyticsRequest("2019-05-24", "2019-05-30", setOf(Dimensions.META_DATA, Dimensions.DATE, Dimensions.HOST_URL), setOf(Metrics.HITS));
+        var reports = analyticsService.executeAll(request)
 
-        var data = AnalyticsProcessor().processResponse(response)
+        var data = AnalyticsProcessor().processReports(reports)
+        println("Found rows from google: " + data.analytics.size)
+
         return parseEvents(data)
 
     }

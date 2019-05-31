@@ -1,14 +1,18 @@
 import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse;
+import com.google.api.services.analyticsreporting.v4.model.Report
 
 class AnalyticsProcessor {
 
+    fun processResponse(response: GetReportsResponse): StructuredAnalytics {
+        return processReports(response.reports)
+    }
 
     //Converts a given response to a StructuredAnalytics object that gives a map of dimensions and metrics.
-    fun processResponse(response: GetReportsResponse): StructuredAnalytics {
+    fun processReports(reports: List<Report>): StructuredAnalytics {
 
         val analytics = emptyList<StructuredAnalytic>().toMutableList()
 
-        for (report in response.reports) {
+        for (report in reports) {
             val header = report.columnHeader
             val dimensionHeaders = header.dimensions
             val metricHeaders = header.metricHeader.metricHeaderEntries

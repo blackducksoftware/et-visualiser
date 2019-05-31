@@ -5,6 +5,8 @@ import com.google.api.services.analyticsreporting.v4.AnalyticsReporting
 import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes
 import com.google.api.services.analyticsreporting.v4.model.*
 import com.google.api.services.analyticsreporting.v4.model.Dimension
+import com.sun.corba.se.impl.protocol.RequestCanceledException
+import com.sun.javaws.exceptions.InvalidArgumentException
 import java.io.FileInputStream
 import java.io.IOException
 import java.security.GeneralSecurityException
@@ -31,7 +33,7 @@ class AnalyticsService// Construct the Analytics Reporting service object.
     }
 
     @Throws(IOException::class)
-    fun executeRequest(request: AnalyticsRequest): GetReportsResponse {
+    fun executeRequest(request: AnalyticsRequest, token: String? = null): GetReportsResponse {
         val dateRange = DateRange()
         dateRange.startDate = request.from
         dateRange.endDate = request.to
@@ -55,12 +57,29 @@ class AnalyticsService// Construct the Analytics Reporting service object.
             .setDateRanges(Arrays.asList(dateRange))
             .setMetrics(metrics)
             .setDimensions(dimensions)
+            .setPageSize(1000)
+
+        if (token != null){
+            request.setPageToken(token)
+        }
 
         val report = GetReportsRequest()
             .setReportRequests(listOf(request))
 
         return analyticsReporting.reports().batchGet(report).execute()
+    }
 
+    //MUST be a single report
+    fun executeAll(request: AnalyticsRequest) : List<Report> {
+        var currentResponse = executeRequest(request)
+        var reports = mutableListOf(currentResponse.reports[0])
+
+        while (currentResponse.reports[0].nextPageToken != null){
+            currentResponse = executeRequest(request, currentResponse.reports[0].nextPageToken)
+            reports.add(currentResponse.reports[0])
+        }
+
+        return reports
     }
 }
 

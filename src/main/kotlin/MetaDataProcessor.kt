@@ -9,7 +9,8 @@ class MetaDataPreProcessor {
     fun findMetaData(analytic: StructuredAnalytic): MetaData? {
         if (analytic.dimensions.containsKey(Dimensions.META_DATA.id)) {
             val metadataPayload = analytic.dimensions.get(Dimensions.META_DATA.id)!!
-            return parseMetaData(metadataPayload)
+            val metadata = parseMetaData(metadataPayload);
+            return metadata
         }
         return null;
     }

@@ -4,6 +4,7 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.analyticsreporting.v4.AnalyticsReporting
 import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes
 import com.google.api.services.analyticsreporting.v4.model.*
+import com.google.api.services.analyticsreporting.v4.model.Dimension
 import java.io.FileInputStream
 import java.io.IOException
 import java.security.GeneralSecurityException

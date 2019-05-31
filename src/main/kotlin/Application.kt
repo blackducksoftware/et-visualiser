@@ -18,17 +18,12 @@ class Styles : Stylesheet() {
     }
 }
 
-data class EricActivity(val name: String, val value: Double)
-
 class HelloWorld : View() {
     private val controller: PieChartController by inject()
 
     override val root = hbox {
-        piechart("Detector usage: 1 Week") {
+        piechart("Detector Usage: 1 Week") {
             controller.getData().forEach {
-                if (it == null) {
-                    return@forEach
-                }
                 data("${it.type}:${it.count}", it.count.toDouble())
             }
         }
@@ -36,28 +31,23 @@ class HelloWorld : View() {
 }
 
 class PieChartController : Controller() {
-    private val data: MutableCollection<BomToolStat?> = mutableListOf()
+    private val data: MutableCollection<BomToolStat> = mutableListOf()
 
-    private var initialized = false
-
-    fun getData(): Collection<BomToolStat?> {
-        if (initialized) {
-            return data
-        }
-
+    init {
         val metadataProcessor = BomToolTypeProcessor()
         val analyticsService = AnalyticsService()
-        val analyticsProcessor = AnalyticsProcessor();
+        val analyticsProcessor = AnalyticsProcessor()
 
         val analyticsReporting = analyticsService.initializeAnalyticsReporting()
         val response = analyticsService.getReport(analyticsReporting)
-        val structuredAnalytics = analyticsProcessor.processResponse(response);
+        val structuredAnalytics = analyticsProcessor.processResponse(response)
 
         val processedResponse = metadataProcessor.processResponse(structuredAnalytics)
 
         data.addAll(processedResponse)
-        initialized = true
+    }
 
+    fun getData(): Collection<BomToolStat> {
         return data
     }
 }

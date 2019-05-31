@@ -26,8 +26,18 @@ class Application {
         )
 
         plot
-            .geomBar(stat = Stat.identity, position = PositionStack())
-            .title("# of Customers Using Detectors")
+            .geomBar(stat = Stat.identity, showLegend = true, position = PositionStack())
+            .title("# of Customers Using Detectors - May")
+            .show()
+
+        val newPlot = getDetectorCustomers().plot(
+            x = CustomersAndDateByDetector::detector,
+            y = CustomersAndDateByDetector::customers
+        )
+        newPlot
+            .geomHistogram(stat = Stat.identity, showLegend = true, binWidth = 30.0)
+            .coordFlip()
+            .title("# of Customers Using Detectors - May")
             .show()
     }
 

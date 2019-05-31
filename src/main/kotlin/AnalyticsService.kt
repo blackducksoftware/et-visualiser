@@ -4,9 +4,6 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.analyticsreporting.v4.AnalyticsReporting
 import com.google.api.services.analyticsreporting.v4.AnalyticsReportingScopes
 import com.google.api.services.analyticsreporting.v4.model.*
-import com.google.api.services.analyticsreporting.v4.model.Dimension
-import com.sun.corba.se.impl.protocol.RequestCanceledException
-import com.sun.javaws.exceptions.InvalidArgumentException
 import java.io.FileInputStream
 import java.io.IOException
 import java.security.GeneralSecurityException
@@ -39,7 +36,7 @@ class AnalyticsService// Construct the Analytics Reporting service object.
         dateRange.endDate = request.to
 
         val metrics = mutableListOf<Metric>();
-        for (metric in request.metrics){
+        for (metric in request.metrics) {
             val gaMetric = Metric()
                 .setExpression(metric.id)
                 .setAlias(metric.alias)
@@ -47,36 +44,39 @@ class AnalyticsService// Construct the Analytics Reporting service object.
         }
 
         val dimensions = mutableListOf<Dimension>();
-        for (dimension in request.dimensions){
+        for (dimension in request.dimensions) {
             val gaDimension = Dimension().setName(dimension.id)
             dimensions.add(gaDimension)
         }
 
-        val request = ReportRequest()
+        val reportRequest = ReportRequest()
             .setViewId(VIEW_ID)
             .setDateRanges(Arrays.asList(dateRange))
             .setMetrics(metrics)
             .setDimensions(dimensions)
-            .setPageSize(1000)
+            .setPageSize(10000)
 
-        if (token != null){
-            request.setPageToken(token)
+        if (token != null) {
+            reportRequest.pageToken = token
         }
 
         val report = GetReportsRequest()
-            .setReportRequests(listOf(request))
+            .setReportRequests(listOf(reportRequest))
 
         return analyticsReporting.reports().batchGet(report).execute()
     }
 
     //MUST be a single report
-    fun executeAll(request: AnalyticsRequest) : List<Report> {
+    fun executeAll(request: AnalyticsRequest): List<Report> {
         var currentResponse = executeRequest(request)
         var reports = mutableListOf(currentResponse.reports[0])
 
-        while (currentResponse.reports[0].nextPageToken != null){
+        var pageCount = 1
+        while (currentResponse.reports[0].nextPageToken != null) {
+            println("Getting page: $pageCount")
             currentResponse = executeRequest(request, currentResponse.reports[0].nextPageToken)
             reports.add(currentResponse.reports[0])
+            pageCount++
         }
 
         return reports

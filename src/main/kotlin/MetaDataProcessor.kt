@@ -1,28 +1,29 @@
-import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Klaxon
-import com.beust.klaxon.lookup
-import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse;
 import java.io.StringReader
 
 class MetaDataPreProcessor {
-
     fun preprocessMetaData(metadataJson: String): MetaData? {
-
         val json = Klaxon().parseJsonObject(StringReader(metadataJson))
         val detectors = mutableListOf<String>()
         val detectorTimings = mutableMapOf<String, String>()
 
-        if (json.containsKey("bomToolTypes")){
-            val allBomToolTypes:String = json.string("bomToolTypes")!!
+        fun addDetector(detector: String, detectorTiming: String = "") {
+            detectors.add(detector)
+            if (detectorTiming.isNotBlank()) {
+                detectorTimings[detector] = detectorTiming
+            }
+        }
+
+        if (json.containsKey("bomToolTypes")) {
+            val allBomToolTypes: String = json.string("bomToolTypes")!!
 
             val bomToolTypes = allBomToolTypes.split(",")
-            for (type in bomToolTypes){
-                var pieces = type.split(":")
-                if (pieces.size == 1){
-                    detectors.add(pieces[0]);
+            for (type in bomToolTypes) {
+                val pieces = type.split(":")
+                if (pieces.size == 1) {
+                    addDetector(pieces[0])
                 } else if (pieces.size == 2) {
-                    detectors.add(pieces[0]);
-                    detectorTimings[pieces[0]] = pieces[1]
+                    addDetector(pieces[0], pieces[1])
                 }
             }
         }
@@ -31,5 +32,5 @@ class MetaDataPreProcessor {
     }
 }
 
-data class MetaData (val detectors: List<String>, val detectorTimings: Map<String, String>)
+data class MetaData(val detectors: List<String>, val detectorTimings: Map<String, String>)
 

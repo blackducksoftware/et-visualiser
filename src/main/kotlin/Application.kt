@@ -1,3 +1,4 @@
+import analytics.AnalyticsProcessor
 import analytics.AnalyticsService
 import detectors.DetectorEventService
 import graph.DataVisualizationService
@@ -16,10 +17,11 @@ class Application {
         val output = File(getPropertyOrThrow("output"))
         output.mkdirs()
 
-        val analyticsService = AnalyticsService(keyFile)
+        val analyticsProcessor = AnalyticsProcessor()
+        val analyticsService = AnalyticsService(keyFile, analyticsProcessor)
         val query = DetectorEventService(analyticsService)
 
-        val data = query.retreiveEvents()
+        val data = query.retrieveEvents()
 
         val viz = DataVisualizationService()
         viz.createLineChart(data, File(output, "line.html"))

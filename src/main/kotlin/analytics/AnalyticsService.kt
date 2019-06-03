@@ -12,15 +12,18 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.security.GeneralSecurityException
 import java.util.*
+import kotlin.reflect.KClass
 
 
-class AnalyticsService// Construct the Analytics Reporting service object.
-@Throws(GeneralSecurityException::class, IOException::class) constructor(keyFile: String) {
+class AnalyticsService // Construct the Analytics Reporting service object.
+@Throws(GeneralSecurityException::class, IOException::class)
+constructor(keyFile: String, analyticsProcessor: AnalyticsProcessor) {
     private val VIEW_ID = "172593710"
     private val APPLICATION_NAME = "ET-Visualizer"
     private val JSON_FACTORY = GsonFactory.getDefaultInstance()
 
     private val analyticsReporting: AnalyticsReporting
+    private val analyticsProcessor: AnalyticsProcessor
 
     init {
         val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
@@ -28,8 +31,9 @@ class AnalyticsService// Construct the Analytics Reporting service object.
             .fromStream(FileInputStream(keyFile))
             .createScoped(AnalyticsReportingScopes.all())
 
-        analyticsReporting = AnalyticsReporting.Builder(httpTransport, JSON_FACTORY, credential)
+        this.analyticsReporting = AnalyticsReporting.Builder(httpTransport, JSON_FACTORY, credential)
             .setApplicationName(APPLICATION_NAME).build()
+        this.analyticsProcessor = analyticsProcessor
     }
 
     @Throws(IOException::class)
@@ -70,9 +74,9 @@ class AnalyticsService// Construct the Analytics Reporting service object.
         return analyticsReporting.reports().batchGet(report).execute()
     }
 
-    private fun defaultFilterExpression():String {
+    private fun defaultFilterExpression(): String {
         val includeCustomersPattern = "([a-zA-Z0-9]*(_hub){1}.*(_){1}[a-zA-Z0-9]{15}|^<unkown>\$|^<unknown>\$)"
-        val excludeHostsPattern = 	"(?i)^.*(hubeval|internal|localhost|unknown|blackducksoftware.co.kr|dc1.lan).*"
+        val excludeHostsPattern = "(?i)^.*(hubeval|internal|localhost|unknown|blackducksoftware.co.kr|dc1.lan).*"
         val excludeCustomersPattern = "(?i)^.*(pandersson|synopsys|test).*"
 
         val includeCustomersFilter = "${Dimensions.CUSTOMER_ID.id}=~$includeCustomersPattern"
@@ -82,7 +86,7 @@ class AnalyticsService// Construct the Analytics Reporting service object.
         return "$includeCustomersFilter;$excludeCustomersFilter;$excludeHostsFilter"
     }
 
-    //MUST be a single report
+    // MUST be a single report
     fun executeAll(request: AnalyticsRequest): List<Report> {
         var currentResponse = executeRequest(request)
         val reports = mutableListOf(currentResponse.reports[0])
@@ -96,6 +100,12 @@ class AnalyticsService// Construct the Analytics Reporting service object.
         }
 
         return reports
+    }
+
+    fun <T : Any> executeToModel(request: AnalyticsRequest, targetClass: KClass<T>): Collection<T> {
+        val response = executeAll(request)
+        val reports = analyticsProcessor.processReports(response)
+        return analyticsProcessor.processStructured(reports, targetClass)
     }
 }
 

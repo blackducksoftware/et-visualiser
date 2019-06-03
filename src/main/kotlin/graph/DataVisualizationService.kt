@@ -1,6 +1,7 @@
 package graph
 
-import detectors.*
+import detectors.CustomerDetectorHitEvent
+import detectors.DetectorAggregateProcessor
 import tech.tablesaw.api.*
 import tech.tablesaw.columns.AbstractColumn
 import tech.tablesaw.columns.Column
@@ -12,11 +13,8 @@ import tech.tablesaw.plotly.traces.PieTrace
 import tech.tablesaw.plotly.traces.ScatterTrace
 import java.io.File
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 class DataVisualizationService {
-    private val dateTimeFormat = "yyyyMMdd"
-
     private val aggregateProcessor = DetectorAggregateProcessor()
 
     fun createLineChart(data: Collection<CustomerDetectorHitEvent>, destination: File) {
@@ -25,19 +23,17 @@ class DataVisualizationService {
         val dates = mutableListOf<LocalDate>()
 
         aggregateProcessor.aggregateUniqueCustomerAndDate(data)
-            .sortedWith(Comparator { o1, o2 ->
-                if (o1.detector == o2.detector) {
-                    val d1 = LocalDate.parse(o1.date, DateTimeFormatter.ofPattern(dateTimeFormat))
-                    val d2 = LocalDate.parse(o2.date, DateTimeFormatter.ofPattern(dateTimeFormat))
-                    return@Comparator d1.compareTo(d2)
+            .sortedWith(Comparator { event1, event2 ->
+                if (event1.detector == event2.detector) {
+                    return@Comparator event1.date.compareTo(event1.date)
                 } else {
-                    return@Comparator o1.detector.compareTo(o2.detector)
+                    return@Comparator event1.detector.compareTo(event2.detector)
                 }
             })
             .forEach {
                 detectors.add(it.detector)
                 customerCount.add(it.customers)
-                dates.add(LocalDate.parse(it.date, DateTimeFormatter.ofPattern(dateTimeFormat)))
+                dates.add(it.date)
             }
 
         val detectorsColumn = StringColumn.create("Detectors", detectors)

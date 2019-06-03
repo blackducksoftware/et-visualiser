@@ -1,8 +1,9 @@
-import analytics.AnalyticsProcessor
-import analytics.AnalyticsService
-import detectors.DetectorEventService
-import graph.DataVisualizationService
+import analytics.*
+import channels.ChannelEventConverter
+import detectors.DetectorEventConverter
+import graph.*
 import java.io.File
+import java.time.LocalDate
 
 
 fun main() {
@@ -19,13 +20,46 @@ class Application {
 
         val analyticsProcessor = AnalyticsProcessor()
         val analyticsService = AnalyticsService(keyFile, analyticsProcessor)
-        val query = DetectorEventService(analyticsService)
 
-        val data = query.retrieveEvents()
+        val request = AnalyticsRequest(
+            "2019-05-24",
+            "2019-05-30",
+            setOf(Dimensions.META_DATA, Dimensions.DATE, Dimensions.HOST_URL),
+            setOf(Metrics.HITS)
+        )
 
+        val reports = analyticsService.executeToModel(request, CustomerMetadataHitAnalytic::class)
         val viz = DataVisualizationService()
-        viz.createLineChart(data, File(output, "line.html"))
-        viz.createPieChart(data, File(output, "pie.html"))
+        val aggregator = CustomerAggregator()
+
+        run {
+            val detectorConverter = DetectorEventConverter(analyticsService)
+            val detectorEvents = reports.flatMap { detectorConverter.convert(it) }
+
+            val customersByDate = aggregator.aggregateByDate(detectorEvents, {event -> event.url}, {event -> event.date}, {event -> event.detector} )
+            val timeGraph = CustomersOverDateGraph(title = "Detectors By Customer", groupLabel = "Detectors", rows = customersByDate.map { CustomersOverDateRow(it.customers, it.value, it.date) })
+            viz.customersOverDateLineGraph(timeGraph, File(output, "detector-customers-over-time.html"))
+
+            val customerUsage = aggregator.aggregateUsage(detectorEvents, {event -> event.url}, {event -> event.detector} )
+            val usageGraph = CustomerUsageGraph(title = "Detectors By Customer", groupLabel = "Detectors", rows = customerUsage.map { CustomerUsageRow(it.customers, it.value) })
+            viz.customerUsageGraph(usageGraph, File(output, "detector-customers-usage.html"))
+        }
+
+        run {
+            val channelConverter = ChannelEventConverter(analyticsService)
+            val channelEvents = reports.flatMap { channelConverter.convert(it) }
+
+            val customersByDate = aggregator.aggregateByDate(channelEvents, {event -> event.url}, {event -> event.date}, {event -> event.channel} )
+            val timeGraph = CustomersOverDateGraph(title = "Channels By Customer", groupLabel = "Channels", rows = customersByDate.map { CustomersOverDateRow(it.customers, it.value, it.date) })
+            viz.customersOverDateLineGraph(timeGraph, File(output, "channel-customers-over-time.html"))
+
+            val customersUsage = aggregator.aggregateUsage(channelEvents, {event -> event.url}, {event -> event.channel} )
+            val usageGraph = CustomerUsageGraph(title = "Channels By Customer", groupLabel = "Channels", rows = customersUsage.map { CustomerUsageRow(it.customers, it.value) })
+            viz.customerUsageGraph(usageGraph, File(output, "channel-customers-usage.html"))
+
+        }
+        //viz.customersOverDateLineGraph(customersByDate, File(output, "line.html"))
+        //viz.customerUsageGraph(uniqueCustomers, File(output, "pie.html"))
     }
 
     @Throws(PropertyNotFound::class)

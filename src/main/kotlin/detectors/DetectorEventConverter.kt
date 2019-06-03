@@ -8,22 +8,12 @@ import analytics.CustomerMetadataHitAnalytic
 import com.beust.klaxon.Klaxon
 import java.io.StringReader
 
-class DetectorEventService(val analyticsService: AnalyticsService) {
-    fun retrieveEvents(): Collection<CustomerDetectorHitEvent> {
-        val request = AnalyticsRequest(
-            "2019-05-20",
-            "2019-05-30",
-            setOf(Dimensions.META_DATA, Dimensions.DATE, Dimensions.HOST_URL),
-            setOf(Metrics.HITS)
-        )
+class DetectorEventConverter(val analyticsService: AnalyticsService) {
 
-        return analyticsService.executeToModel(request, CustomerMetadataHitAnalytic::class).flatMap { convert(it) }
-    }
-
-    private fun convert(analytic: CustomerMetadataHitAnalytic): List<CustomerDetectorHitEvent> {
+    fun convert(analytic: CustomerMetadataHitAnalytic): List<CustomerDetectorHitEvent> {
         val metadata = parseMetaData(analytic.metadata)
         if (metadata != null) {
-            return metadata.detectors.map {
+            return metadata.detectors.filter{ it.isNotBlank() }.map{ it.trim() }.map {
                 CustomerDetectorHitEvent(it, analytic.url, analytic.date, analytic.hits.toIntOrNull() ?: 0)
             }
         }

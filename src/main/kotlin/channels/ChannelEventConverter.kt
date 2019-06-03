@@ -8,21 +8,8 @@ import analytics.CustomerMetadataHitAnalytic
 import com.beust.klaxon.Klaxon
 import java.io.StringReader
 
-class ChannelEventService(val analyticsService: AnalyticsService) {
-    fun retreiveEvents(): Collection<ChannelHitEvent> {
-        val request = AnalyticsRequest(
-            "2019-05-24",
-            "2019-05-30",
-            setOf(Dimensions.META_DATA, Dimensions.DATE, Dimensions.HOST_URL),
-            setOf(Metrics.HITS)
-        )
-        val reports = analyticsService.executeToModel(request, CustomerMetadataHitAnalytic::class)
-
-        return reports.flatMap { convert(it) }
-
-    }
-
-    private fun convert(analytic: CustomerMetadataHitAnalytic): List<ChannelHitEvent> {
+class ChannelEventConverter(val analyticsService: AnalyticsService) {
+    fun convert(analytic: CustomerMetadataHitAnalytic): List<ChannelHitEvent> {
         val metadata = parseMetaData(analytic.metadata)
         if (metadata != null) {
             return metadata.channels.map {
@@ -39,9 +26,9 @@ class ChannelEventService(val analyticsService: AnalyticsService) {
         if (metadataJson.contains("channel.")) {
             for (key in json.keys) {
                 if (key.startsWith("channel.")) {
-                    var channel = key.substringAfter("channel.").replace("channel_", "").replace("_channel", "").replace("_group", "")
+                    val channel = key.substringAfter("channel.").replace("channel_", "").replace("_channel", "").replace("_group", "")
                     val channelValue = json.string(key)!!
-                    channel += "-$channelValue";
+                    //channel += "-$channelValue";
                     channels[channel] = channelValue.toInt()
                 }
             }

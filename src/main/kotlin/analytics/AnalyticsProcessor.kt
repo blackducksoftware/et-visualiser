@@ -22,24 +22,24 @@ class AnalyticsProcessor {
                 val dimensions = row.dimensions
                 val metrics = row.metrics
 
-                val dimensionMap = mutableMapOf<String, String>();
+                val dimensionMap = mutableMapOf<String, String>()
                 var i = 0
                 while (i < dimensionHeaders.size && i < dimensions.size) {
 
-                    dimensionMap[dimensionHeaders[i]] = dimensions[i];
+                    dimensionMap[dimensionHeaders[i]] = dimensions[i]
                     i++
                 }
 
-                val metricMap = mutableMapOf<String, String>();
+                val metricMap = mutableMapOf<String, String>()
                 for (j in metrics.indices) {
                     val values = metrics[j]
                     var k = 0
                     while (k < values.getValues().size && k < metricHeaders.size) {
-                        metricMap[metricHeaders[k].name] = values.getValues()[k];
+                        metricMap[metricHeaders[k].name] = values.getValues()[k]
                         k++
                     }
                 }
-                analytics.add(StructuredAnalytic(dimensionMap, metricMap));
+                analytics.add(StructuredAnalytic(dimensionMap, metricMap))
             }
         }
 
@@ -52,7 +52,7 @@ class AnalyticsProcessor {
 
     private fun <T : Any> processStructured(analytic: StructuredAnalytic, targetClass: KClass<T>): T {
         val params = mutableMapOf<KParameter, Any>()
-        val c = targetClass.constructors.first();
+        val c = targetClass.constructors.first()
         c.parameters.map {
             run {
                 val dimensionAnnotation = it.findAnnotation<DimensionValue>()

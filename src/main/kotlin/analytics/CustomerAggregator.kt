@@ -13,7 +13,7 @@ class CustomerAggregator {
             val value = getGroupValue(datum)
 
             val key = GroupValueDate(value, date)
-            if (!aggregate.containsKey(key)){
+            if (!aggregate.containsKey(key)) {
                 aggregate[key] = mutableSetOf()
             }
 
@@ -34,7 +34,7 @@ class CustomerAggregator {
             val customerId = getCustomerId(datum)
             val key = getGroupValue(datum)
 
-            if (!aggregate.containsKey(key)){
+            if (!aggregate.containsKey(key)) {
                 aggregate[key] = mutableSetOf()
             }
 
@@ -53,7 +53,6 @@ fun String.toDate(): LocalDate {
     return LocalDate.parse(this, DateTimeFormatter.ofPattern("yyyyMMdd"))
 }
 
-data class GroupValueDate(val value:String, val date:LocalDate)
-
+data class GroupValueDate(val value: String, val date: LocalDate)
 data class CustomerDateAggregate(val customers: Int, val date: LocalDate, val value: String)
 data class CustomerAggregate(val customers: Int, val value: String)

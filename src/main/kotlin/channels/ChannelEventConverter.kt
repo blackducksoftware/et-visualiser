@@ -1,8 +1,5 @@
 package channels
 
-import Dimensions
-import Metrics
-import analytics.AnalyticsRequest
 import analytics.AnalyticsService
 import analytics.CustomerMetadataHitAnalytic
 import com.beust.klaxon.Klaxon
@@ -28,7 +25,6 @@ class ChannelEventConverter(val analyticsService: AnalyticsService) {
                 if (key.startsWith("channel.")) {
                     val channel = key.substringAfter("channel.").replace("channel_", "").replace("_channel", "").replace("_group", "")
                     val channelValue = json.string(key)!!
-                    //channel += "-$channelValue";
                     channels[channel] = channelValue.toInt()
                 }
             }

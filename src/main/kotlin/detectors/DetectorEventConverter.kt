@@ -1,8 +1,5 @@
 package detectors
 
-import Dimensions
-import Metrics
-import analytics.AnalyticsRequest
 import analytics.AnalyticsService
 import analytics.CustomerMetadataHitAnalytic
 import com.beust.klaxon.Klaxon
@@ -13,7 +10,7 @@ class DetectorEventConverter(val analyticsService: AnalyticsService) {
     fun convert(analytic: CustomerMetadataHitAnalytic): List<CustomerDetectorHitEvent> {
         val metadata = parseMetaData(analytic.metadata)
         if (metadata != null) {
-            return metadata.detectors.filter{ it.isNotBlank() }.map{ it.trim() }.map {
+            return metadata.detectors.filter { it.isNotBlank() }.map { it.trim() }.map {
                 CustomerDetectorHitEvent(it, analytic.url, analytic.date, analytic.hits.toIntOrNull() ?: 0)
             }
         }
@@ -32,9 +29,9 @@ class DetectorEventConverter(val analyticsService: AnalyticsService) {
             for (type in bomToolTypes) {
                 val pieces = type.split(":")
                 if (pieces.size == 1) {
-                    detectors.add(pieces[0]);
+                    detectors.add(pieces[0])
                 } else if (pieces.size == 2) {
-                    detectors.add(pieces[0]);
+                    detectors.add(pieces[0])
                     detectorTimings[pieces[0]] = pieces[1]
                 }
             }

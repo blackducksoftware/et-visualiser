@@ -13,19 +13,18 @@ import java.io.File
 import java.time.LocalDate
 
 class DataVisualizationService {
-
     fun customersOverDateLineGraph(graph: CustomersOverDateGraph, destination: File) {
         val detectors = mutableListOf<String>()
         val customerCount = mutableListOf<Int>()
         val dates = mutableListOf<LocalDate>()
 
         graph.rows.sortedWith(Comparator { event1, event2 ->
-                if (event1.groupValue == event2.groupValue) {
-                    return@Comparator event1.date.compareTo(event2.date)
-                } else {
-                    return@Comparator event1.groupValue.compareTo(event2.groupValue)
-                }
-            })
+            if (event1.groupValue == event2.groupValue) {
+                return@Comparator event1.date.compareTo(event2.date)
+            } else {
+                return@Comparator event1.groupValue.compareTo(event2.groupValue)
+            }
+        })
             .forEach {
                 detectors.add(it.groupValue)
                 customerCount.add(it.customers)
@@ -35,7 +34,7 @@ class DataVisualizationService {
         val detectorsColumn = StringColumn.create(graph.groupLabel, detectors)
         val customerCountColumn = IntColumn.create("Customer Count", customerCount.toIntArray())
         val datesColumn = DateColumn.create("Date", dates)
-        val scatterPlot = createScatterPlot(graph, detectorsColumn, customerCountColumn, datesColumn)
+        val scatterPlot = createScatterPlotFigure(graph, detectorsColumn, customerCountColumn, datesColumn)
 
         Plot.show(scatterPlot, destination)
     }
@@ -66,7 +65,7 @@ class DataVisualizationService {
         return PieTrace.builder(detectorsColumn, customerCountColumn).build()
     }
 
-    private fun createScatterPlot(
+    private fun createScatterPlotFigure(
         graph: CustomersOverDateGraph,
         detectorsColumn: Column<String>,
         customerCountColumn: NumberColumn<Int>,
@@ -80,7 +79,7 @@ class DataVisualizationService {
         val tables = table.splitOn(table.categoricalColumn(groupCol))
         val layout = Layout.builder(title, xCol, yCol)
             .showLegend(true)
-            .width(1300)
+            .width(1400)
             .height(1000)
             .build()
         val traces = arrayOfNulls<ScatterTrace>(tables.size())
@@ -101,8 +100,8 @@ class DataVisualizationService {
     }
 }
 
-data class CustomerUsageGraph (val title: String, val groupLabel: String, val rows: List<CustomerUsageRow>)
+data class CustomerUsageGraph(val title: String, val groupLabel: String, val rows: List<CustomerUsageRow>)
 data class CustomerUsageRow(val customers: Int, val groupValue: String)
 
-data class CustomersOverDateGraph (val title: String, val groupLabel: String, val rows: List<CustomersOverDateRow>)
+data class CustomersOverDateGraph(val title: String, val groupLabel: String, val rows: List<CustomersOverDateRow>)
 data class CustomersOverDateRow(val customers: Int, val groupValue: String, val date: LocalDate)

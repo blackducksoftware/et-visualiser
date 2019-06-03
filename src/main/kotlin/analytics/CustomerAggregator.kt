@@ -10,9 +10,9 @@ class CustomerAggregator {
         for (datum in data) {
             val customerId = getCustomerId(datum)
             val date = getDateStr(datum).toDate()
-            val value = getGroupValue(datum)
+            val groupValue = getGroupValue(datum)
 
-            val key = GroupValueDate(value, date)
+            val key = GroupValueDate(groupValue, date)
             if (!aggregate.containsKey(key)) {
                 aggregate[key] = mutableSetOf()
             }
@@ -32,13 +32,13 @@ class CustomerAggregator {
 
         for (datum in data) {
             val customerId = getCustomerId(datum)
-            val key = getGroupValue(datum)
+            val groupValue = getGroupValue(datum)
 
-            if (!aggregate.containsKey(key)) {
-                aggregate[key] = mutableSetOf()
+            if (!aggregate.containsKey(groupValue)) {
+                aggregate[groupValue] = mutableSetOf()
             }
 
-            aggregate[key]!!.add(customerId)
+            aggregate[groupValue]!!.add(customerId)
         }
 
         return aggregate.map {

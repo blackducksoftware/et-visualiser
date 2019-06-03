@@ -8,12 +8,13 @@ fun main() {
     Application()
 }
 
-open class PropertyNotFound(message:String): Exception(message)
+open class PropertyNotFound(message: String) : Exception(message)
 
 class Application {
     init {
         val keyFile = getPropertyOrThrow("keyfile")
         val output = File(getPropertyOrThrow("output"))
+        output.mkdirs()
 
         val analyticsService = AnalyticsService(keyFile)
         val query = DetectorEventService(analyticsService)
@@ -28,7 +29,7 @@ class Application {
     @Throws(PropertyNotFound::class)
     fun getPropertyOrThrow(property: String): String {
         val env = System.getenv();
-        if (env.containsKey(property)){
+        if (env.containsKey(property)) {
             return env[property]!!
         } else {
             throw PropertyNotFound("Missing required property: $property")

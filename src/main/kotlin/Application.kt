@@ -20,6 +20,10 @@ class Application {
     }
 
     fun run() {
+        val colorMap = mutableMapOf(
+            Pair("MAVEN", RColor.black)
+        )
+
         val plot = getDetectorCustomers().plot(
             x = CustomersAndDateByDetector::date,
             y = CustomersAndDateByDetector::customers,
@@ -27,7 +31,9 @@ class Application {
         )
 
         plot
-            .geomBar(stat = Stat.identity, showLegend = true, position = PositionStack())
+            .geomBar(stat = Stat.identity, showLegend = true, position = PositionStack(), color = RColor.black)
+            .themeDark()
+            .scaleColorManual(values = colorMap)
             .title("# of Customers Using Detectors - May")
             .show()
 
@@ -36,9 +42,9 @@ class Application {
             y = CustomersAndDateByDetector::customers
         )
         newPlot
-            .geomHistogram(stat = Stat.identity, showLegend = true, binWidth = 30.0)
-            .coordFlip()
+            .geomHistogram(stat = Stat.identity, showLegend = true)
             .title("# of Customers Using Detectors - May")
+            .coordFlip()
             .show()
     }
 

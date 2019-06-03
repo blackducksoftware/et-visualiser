@@ -10,7 +10,6 @@ import tech.tablesaw.plotly.traces.PieTrace
 import tech.tablesaw.plotly.traces.ScatterTrace
 import java.io.File
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 
 fun main() {
@@ -19,14 +18,11 @@ fun main() {
 }
 
 class Application {
-    private val dateTimeFormat = "yyyyMMdd"
-
     private val rawData: MutableCollection<CustomerDetectorHitEvent> = mutableListOf()
 
     init {
         val analyticsService = AnalyticsService()
         val query = DetectorEventService(analyticsService)
-
         rawData.addAll(query.retreiveEvents())
     }
 
@@ -40,9 +36,7 @@ class Application {
             getDetectorCustomers()
                 .sortedWith(Comparator { o1, o2 ->
                     if (o1.detector == o2.detector) {
-                        val d1 = LocalDate.parse(o1.date, DateTimeFormatter.ofPattern(dateTimeFormat))
-                        val d2 = LocalDate.parse(o2.date, DateTimeFormatter.ofPattern(dateTimeFormat))
-                        return@Comparator d1.compareTo(d2)
+                        return@Comparator o1.date.compareTo(o2.date)
                     } else {
                         return@Comparator o1.detector.compareTo(o2.detector)
                     }
@@ -50,7 +44,7 @@ class Application {
                 .forEach {
                     detectors.add(it.detector)
                     customerCount.add(it.customers)
-                    dates.add(LocalDate.parse(it.date, DateTimeFormatter.ofPattern(dateTimeFormat)))
+                    dates.add(it.date)
                 }
 
             val detectorsColumn = StringColumn.create("Detectors", detectors)
@@ -80,7 +74,7 @@ class Application {
                 .height(1000)
                 .build()
 
-            Plot.show(Figure(layout, pieTrace), File("/tmp/figure2.html"))
+            Plot.show(Figure(layout, pieTrace), File("/tmp/test/figure2.html"))
         }
     }
 

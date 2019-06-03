@@ -2,6 +2,11 @@ package analytics
 
 import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse;
 import com.google.api.services.analyticsreporting.v4.model.Report
+import kotlin.reflect.KClass
+import Dimensions
+import Metrics
+import kotlin.reflect.KParameter
+import kotlin.reflect.full.findAnnotation
 
 class AnalyticsProcessor {
 
@@ -51,7 +56,39 @@ class AnalyticsProcessor {
 
         return StructuredAnalytics(analytics)
     }
+
+    fun <T:Any> processStructured(analytics: StructuredAnalytics, targetClass: KClass<T>) : Collection<T> {
+        return analytics.analytics.map { processStructured(it, targetClass) }
+    }
+
+    fun <T:Any> processStructured(analytic: StructuredAnalytic, targetClass: KClass<T>) : T {
+        val params = mutableMapOf<KParameter, Any>()
+        val c = targetClass.constructors.first();
+        c.parameters.map {
+            run {
+                val dimensionAnnotation = it.findAnnotation<DimensionValue>()
+                if (dimensionAnnotation != null) {
+                    val dimension = dimensionAnnotation.dimension
+                    params[it] = analytic.dimensions.getOrDefault(dimension.id, "Unknown")
+                }
+            }
+            run {
+                val metricAnnotation = it.findAnnotation<MetricValue>()
+                if (metricAnnotation != null) {
+                    val metric = metricAnnotation.metric
+                    params[it] = analytic.metrics.getOrDefault(metric.id, "Unknown")
+                }
+            }
+        }
+        return c.callBy(params)
+    }
 }
+
+@Target(AnnotationTarget.VALUE_PARAMETER)
+annotation class DimensionValue(val dimension: Dimensions)
+
+@Target(AnnotationTarget.VALUE_PARAMETER)
+annotation class MetricValue(val metric: Metrics)
 
 data class StructuredAnalytics (var analytics: List<StructuredAnalytic> )
 data class StructuredAnalytic (var dimensions: Map<String, String>, var metrics: Map<String, String>)

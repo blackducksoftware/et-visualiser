@@ -1,11 +1,10 @@
 package detectors
 
-import analytics.AnalyticsProcessor
-import analytics.AnalyticsRequest
-import analytics.AnalyticsService
 import Dimensions
 import Metrics
-import analytics.StructuredAnalytics
+import analytics.*
+import com.beust.klaxon.Klaxon
+import java.io.StringReader
 
 class DetectorEventService(val analyticsService: AnalyticsService) {
 
@@ -22,35 +21,48 @@ class DetectorEventService(val analyticsService: AnalyticsService) {
         var data = AnalyticsProcessor().processReports(reports)
         println("Found rows from google: " + data.analytics.size)
 
-        return parseEvents(data)
+        var models = AnalyticsProcessor().processStructured(data, CustomerDetectorHitAnalytic::class)
+        println("Processed rows into models: " + models.size)
+
+        var events = models.flatMap { convert(it) }
+        println("Parsed metadata: " + models.size)
+
+        return events
 
     }
 
-    private fun parseEvents(structuredAnalytics: StructuredAnalytics): Collection<CustomerDetectorHitEvent> {
-        val events = mutableListOf<CustomerDetectorHitEvent>()
-        val metaDataPreProcessor = DetectorMetaDataProcessor()
-
-        fun emit(detector: String, url: String, date: String, hits: Int) {
-            events.add(CustomerDetectorHitEvent(detector.trim(), url, date, hits))
+    fun convert(analytic: CustomerDetectorHitAnalytic): List<CustomerDetectorHitEvent> {
+        val metadata = parseMetaData(analytic.metadata)
+        if (metadata != null){
+            return metadata.detectors.map { CustomerDetectorHitEvent(it, analytic.url, analytic.date, analytic.hits.toIntOrNull() ?: 0) }
         }
+        return emptyList()
+    }
 
-        for (analytic in structuredAnalytics.analytics) {
-            val metaData = metaDataPreProcessor.findMetaData(analytic)
-            if (metaData != null) {
-                for (type in metaData.detectors) {
-                    val url = analytic.dimensions.getOrDefault(Dimensions.HOST_URL.id, "Unknown")
-                    val date = analytic.dimensions.getOrDefault(Dimensions.DATE.id, "Unknown")
-                    val hitStr = analytic.metrics.getOrDefault(Metrics.HITS.alias, "0")
-                    val hits = hitStr.toIntOrNull() ?: 0
-                    emit(detector = type, url = url, date = date, hits = hits)
+    fun parseMetaData(metadataJson: String): DetectorMetaData? {
+        val json = Klaxon().parseJsonObject(StringReader(metadataJson))
+        val detectors = mutableListOf<String>()
+        val detectorTimings = mutableMapOf<String, String>()
+
+        if (json.containsKey("bomToolTypes")){
+            val allBomToolTypes:String = json.string("bomToolTypes")!!
+
+            val bomToolTypes = allBomToolTypes.split(",")
+            for (type in bomToolTypes){
+                var pieces = type.split(":")
+                if (pieces.size == 1){
+                    detectors.add(pieces[0]);
+                } else if (pieces.size == 2) {
+                    detectors.add(pieces[0]);
+                    detectorTimings[pieces[0]] = pieces[1]
                 }
             }
         }
 
-        return events
+        return DetectorMetaData(detectors, detectorTimings)
     }
-
 }
 
-
+data class CustomerDetectorHitAnalytic(@DimensionValue(Dimensions.META_DATA) val metadata: String, @DimensionValue(Dimensions.HOST_URL) val url: String, @DimensionValue(Dimensions.DATE) val date: String, @MetricValue(Metrics.HITS) val hits: String)
 data class CustomerDetectorHitEvent(val detector: String, val url: String, val date: String, val hits: Int)
+data class DetectorMetaData (val detectors: List<String>, val detectorTimings: Map<String, String>)

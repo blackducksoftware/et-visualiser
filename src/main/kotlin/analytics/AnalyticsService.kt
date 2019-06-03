@@ -1,3 +1,7 @@
+package analytics
+
+import Dimensions
+import Metrics
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
@@ -11,18 +15,17 @@ import java.util.*
 
 
 class AnalyticsService// Construct the Analytics Reporting service object.
-@Throws(GeneralSecurityException::class, IOException::class) constructor() {
-    private val KEY_FILE_LOCATION = System.getenv("keyfile")
+@Throws(GeneralSecurityException::class, IOException::class) constructor(keyFile: String) {
     private val VIEW_ID = "172593710"
     private val APPLICATION_NAME = "ET-Visualizer"
     private val JSON_FACTORY = GsonFactory.getDefaultInstance()
 
-    private val analyticsReporting: AnalyticsReporting;
+    private val analyticsReporting: AnalyticsReporting
 
     init {
         val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
         val credential = GoogleCredential
-            .fromStream(FileInputStream(KEY_FILE_LOCATION))
+            .fromStream(FileInputStream(keyFile))
             .createScoped(AnalyticsReportingScopes.all())
 
         analyticsReporting = AnalyticsReporting.Builder(httpTransport, JSON_FACTORY, credential)
@@ -55,6 +58,7 @@ class AnalyticsService// Construct the Analytics Reporting service object.
             .setMetrics(metrics)
             .setDimensions(dimensions)
             .setPageSize(10000)
+            .setFiltersExpression(defaultFilterExpression())
 
         if (token != null) {
             reportRequest.pageToken = token
@@ -66,10 +70,22 @@ class AnalyticsService// Construct the Analytics Reporting service object.
         return analyticsReporting.reports().batchGet(report).execute()
     }
 
+    private fun defaultFilterExpression():String {
+        val includeCustomersPattern = "([a-zA-Z0-9]*(_hub){1}.*(_){1}[a-zA-Z0-9]{15}|^<unkown>\$|^<unknown>\$)"
+        val excludeHostsPattern = 	"(?i)^.*(hubeval|internal|localhost|unknown|blackducksoftware.co.kr|dc1.lan).*"
+        val excludeCustomersPattern = "(?i)^.*(pandersson|synopsys|test).*"
+
+        val includeCustomersFilter = "${Dimensions.CUSTOMER_ID.id}=~$includeCustomersPattern"
+        val excludeCustomersFilter = "${Dimensions.CUSTOMER_ID.id}!~$excludeCustomersPattern"
+        val excludeHostsFilter = "${Dimensions.HOST_URL.id}!~$excludeHostsPattern"
+
+        return "$includeCustomersFilter;$excludeCustomersFilter;$excludeHostsFilter"
+    }
+
     //MUST be a single report
     fun executeAll(request: AnalyticsRequest): List<Report> {
         var currentResponse = executeRequest(request)
-        var reports = mutableListOf(currentResponse.reports[0])
+        val reports = mutableListOf(currentResponse.reports[0])
 
         var pageCount = 1
         while (currentResponse.reports[0].nextPageToken != null) {
@@ -83,6 +99,4 @@ class AnalyticsService// Construct the Analytics Reporting service object.
     }
 }
 
-data class AnalyticsRequest(val from: String, val to: String, val dimensions: Set<Dimensions>, val metrics: Set<Metrics>) {
-
-}
+data class AnalyticsRequest(val from: String, val to: String, val dimensions: Set<Dimensions>, val metrics: Set<Metrics>)

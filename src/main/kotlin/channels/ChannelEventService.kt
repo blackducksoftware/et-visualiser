@@ -1,11 +1,11 @@
 package channels
 
-import AnalyticsProcessor
-import AnalyticsRequest
-import AnalyticsService
+import analytics.AnalyticsProcessor
+import analytics.AnalyticsRequest
+import analytics.AnalyticsService
 import Dimensions
 import Metrics
-import StructuredAnalytics
+import analytics.StructuredAnalytics
 
 class ChannelEventService(val analyticsService: AnalyticsService) {
 

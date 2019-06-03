@@ -1,7 +1,7 @@
 package channels
 
 import Dimensions
-import StructuredAnalytic
+import analytics.StructuredAnalytic
 import com.beust.klaxon.Klaxon
 import java.io.StringReader
 
@@ -24,9 +24,9 @@ class ChannelMetaDataProcessor {
         if (metadataJson.contains("channel.")){
             for (key in json.keys){
                 if (key.startsWith("channel.")) {
-                    val channel = key.substringAfter("channel.").replace("channel_", "").replace("_channel", "").replace("_group", "")
-
+                    var channel = key.substringAfter("channel.").replace("channel_", "").replace("_channel", "").replace("_group", "")
                     var channel_value = json.string(key)!!
+                    channel += "-" + channel_value;
                     channels[channel] = channel_value.toInt()!!
                 }
             }

@@ -12,7 +12,7 @@ class DetectorEventService(val analyticsService: AnalyticsService) {
     fun retreiveEvents(): Collection<CustomerDetectorHitEvent> {
 
         var request = AnalyticsRequest(
-            "2019-05-24",
+            "2019-05-20",
             "2019-05-30",
             setOf(Dimensions.META_DATA, Dimensions.DATE, Dimensions.HOST_URL),
             setOf(Metrics.HITS)
@@ -31,13 +31,13 @@ class DetectorEventService(val analyticsService: AnalyticsService) {
         val metaDataPreProcessor = DetectorMetaDataProcessor()
 
         fun emit(detector: String, url: String, date: String, hits: Int) {
-            events.add(CustomerDetectorHitEvent(detector, url, date, hits))
+            events.add(CustomerDetectorHitEvent(detector.trim(), url, date, hits))
         }
 
         for (analytic in structuredAnalytics.analytics) {
             val metaData = metaDataPreProcessor.findMetaData(analytic)
-            if (metaData != null){
-                for (type in metaData.detectors){
+            if (metaData != null) {
+                for (type in metaData.detectors) {
                     val url = analytic.dimensions.getOrDefault(Dimensions.HOST_URL.id, "Unknown")
                     val date = analytic.dimensions.getOrDefault(Dimensions.DATE.id, "Unknown")
                     val hitStr = analytic.metrics.getOrDefault(Metrics.HITS.alias, "0")

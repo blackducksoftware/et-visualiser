@@ -18,6 +18,8 @@ dependencies {
     implementation("com.google.apis:google-api-services-analyticsreporting:v4-rev20190318-1.28.0")
     implementation("com.google.http-client:google-http-client-gson:1.29.1")
     implementation("com.beust:klaxon:5.0.5")
+    implementation("tech.tablesaw:tablesaw-core:0.32.7")
+    implementation("tech.tablesaw:tablesaw-jsplot:0.32.7")
 }
 
 tasks.withType<KotlinCompile> {

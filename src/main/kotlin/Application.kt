@@ -14,11 +14,13 @@ import java.time.format.DateTimeFormatter
 
 
 fun main() {
-    val application2 = Application2()
-    application2.run2()
+    val application2 = Application()
+    application2.generateGraphs()
 }
 
-class Application2 {
+class Application {
+    private val dateTimeFormat = "yyyyMMdd"
+
     private val rawData: MutableCollection<CustomerDetectorHitEvent> = mutableListOf()
 
     init {
@@ -28,13 +30,8 @@ class Application2 {
         rawData.addAll(query.retreiveEvents())
     }
 
-    fun run2() {
-        val layout = Layout.builder()
-            .title("# of Customers utilizing Detectors")
-            .width(1300)
-            .height(1000)
-            .build()
-
+    fun generateGraphs() {
+        // Scatter Plot
         run {
             val detectors = mutableListOf<String>()
             val customerCount = mutableListOf<Int>()
@@ -43,8 +40,8 @@ class Application2 {
             getDetectorCustomers()
                 .sortedWith(Comparator { o1, o2 ->
                     if (o1.detector == o2.detector) {
-                        val d1 = LocalDate.parse(o1.date, DateTimeFormatter.ofPattern("yyyyMMdd"))
-                        val d2 = LocalDate.parse(o2.date, DateTimeFormatter.ofPattern("yyyyMMdd"))
+                        val d1 = LocalDate.parse(o1.date, DateTimeFormatter.ofPattern(dateTimeFormat))
+                        val d2 = LocalDate.parse(o2.date, DateTimeFormatter.ofPattern(dateTimeFormat))
                         return@Comparator d1.compareTo(d2)
                     } else {
                         return@Comparator o1.detector.compareTo(o2.detector)
@@ -53,19 +50,18 @@ class Application2 {
                 .forEach {
                     detectors.add(it.detector)
                     customerCount.add(it.customers)
-                    dates.add(LocalDate.parse(it.date, DateTimeFormatter.ofPattern("yyyyMMdd")))
+                    dates.add(LocalDate.parse(it.date, DateTimeFormatter.ofPattern(dateTimeFormat)))
                 }
 
             val detectorsColumn = StringColumn.create("Detectors", detectors)
             val customerCountColumn = IntColumn.create("Customer Count", customerCount.toIntArray())
             val datesColumn = DateColumn.create("Date", dates)
-
-            val scatterPlot = createScatterTrace(detectorsColumn, customerCountColumn, datesColumn)
+            val scatterPlot = createScatterPlot(detectorsColumn, customerCountColumn, datesColumn)
 
             Plot.show(scatterPlot, File("/tmp/figure1.html"))
-
         }
 
+        // Pie Chart
         run {
             val detectors = mutableListOf<String>()
             val customerCount = mutableListOf<Int>()
@@ -76,8 +72,13 @@ class Application2 {
 
             val detectorsColumn = StringColumn.create("Detectors", detectors)
             val customerCountColumn = IntColumn.create("Customer Count", customerCount.toIntArray())
-
             val pieTrace = createPieTrace(detectorsColumn, customerCountColumn)
+
+            val layout = Layout.builder()
+                .title("Detector Usage")
+                .width(1400)
+                .height(1000)
+                .build()
 
             Plot.show(Figure(layout, pieTrace), File("/tmp/figure2.html"))
         }
@@ -87,12 +88,12 @@ class Application2 {
         return PieTrace.builder(detectorsColumn, customerCountColumn).build()
     }
 
-    private fun createScatterTrace(detectorsColumn: Column<String>, customerCountColumn: NumberColumn<Int>, datesColumn: AbstractColumn<LocalDate>): Figure {
+    private fun createScatterPlot(detectorsColumn: Column<String>, customerCountColumn: NumberColumn<Int>, datesColumn: AbstractColumn<LocalDate>): Figure {
         val table = Table.create(datesColumn, customerCountColumn, detectorsColumn)
-        return createScatterPlot("Detector Usage Over Time", table, "Date", "Customer Count", "Detectors")
-    }
-
-    private fun createScatterPlot(title: String, table: Table, xCol: String, yCol: String, groupCol: String): Figure {
+        val title = "Detector Usage Over Time"
+        val xCol = "Date"
+        val yCol = "Customer Count"
+        val groupCol = "Detectors"
         val tables = table.splitOn(table.categoricalColumn(groupCol))
         val layout = Layout.builder(title, xCol, yCol)
             .showLegend(true)

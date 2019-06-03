@@ -1,7 +1,7 @@
 package detectors
 
 import Dimensions
-import StructuredAnalytic
+import analytics.StructuredAnalytic
 import com.beust.klaxon.Klaxon
 import java.io.StringReader
 

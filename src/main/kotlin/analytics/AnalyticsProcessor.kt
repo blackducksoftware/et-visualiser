@@ -1,3 +1,5 @@
+package analytics
+
 import com.google.api.services.analyticsreporting.v4.model.GetReportsResponse;
 import com.google.api.services.analyticsreporting.v4.model.Report
 
@@ -7,7 +9,7 @@ class AnalyticsProcessor {
         return processReports(response.reports)
     }
 
-    //Converts a given response to a StructuredAnalytics object that gives a map of dimensions and metrics.
+    //Converts a given response to a analytics.StructuredAnalytics object that gives a map of dimensions and metrics.
     fun processReports(reports: List<Report>): StructuredAnalytics {
 
         val analytics = emptyList<StructuredAnalytic>().toMutableList()
@@ -43,11 +45,11 @@ class AnalyticsProcessor {
                         k++
                     }
                 }
-                analytics.add(StructuredAnalytic(dimensionMap, metricMap));
+                analytics.add(analytics.StructuredAnalytic(dimensionMap, metricMap));
             }
         }
 
-        return StructuredAnalytics(analytics);
+        return analytics.StructuredAnalytics(analytics);
     }
 }
 

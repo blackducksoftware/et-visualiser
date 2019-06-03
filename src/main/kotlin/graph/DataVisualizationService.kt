@@ -87,7 +87,7 @@ class DataVisualizationService {
         for (i in 0 until tables.size()) {
             val tableList = tables.asTableList()
             traces[i] = ScatterTrace.builder(
-                tableList[i].numberColumn(xCol),
+                tableList[i].dateColumn(xCol),
                 tableList[i].numberColumn(yCol)
             )
                 .showLegend(true)

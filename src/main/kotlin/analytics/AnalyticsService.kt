@@ -58,6 +58,7 @@ class AnalyticsService// Construct the Analytics Reporting service object.
             .setMetrics(metrics)
             .setDimensions(dimensions)
             .setPageSize(10000)
+            .setFiltersExpression(defaultFilterExpression())
 
         if (token != null) {
             reportRequest.pageToken = token
@@ -67,6 +68,18 @@ class AnalyticsService// Construct the Analytics Reporting service object.
             .setReportRequests(listOf(reportRequest))
 
         return analyticsReporting.reports().batchGet(report).execute()
+    }
+
+    private fun defaultFilterExpression():String {
+        val includeCustomersPattern = "([a-zA-Z0-9]*(_hub){1}.*(_){1}[a-zA-Z0-9]{15}|^<unkown>\$|^<unknown>\$)"
+        val excludeHostsPattern = 	"(?i)^.*(hubeval|internal|localhost|unknown|blackducksoftware.co.kr|dc1.lan).*"
+        val excludeCustomersPattern = "(?i)^.*(pandersson|synopsys|test).*"
+
+        val includeCustomersFilter = "${Dimensions.CUSTOMER_ID.id}=~$includeCustomersPattern"
+        val excludeCustomersFilter = "${Dimensions.CUSTOMER_ID.id}!~$excludeCustomersPattern"
+        val excludeHostsFilter = "${Dimensions.HOST_URL.id}!~$excludeHostsPattern"
+
+        return "$includeCustomersFilter;$excludeCustomersFilter;$excludeHostsFilter"
     }
 
     //MUST be a single report

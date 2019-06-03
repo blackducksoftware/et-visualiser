@@ -1,4 +1,5 @@
 enum class Dimensions(val id: String) {
+    CUSTOMER_ID("ga:dimension1"),
     META_DATA("ga:dimension6"),
     HOST_URL("ga:dimension7"),
     DATE("ga:date")

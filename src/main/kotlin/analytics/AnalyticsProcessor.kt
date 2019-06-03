@@ -45,11 +45,11 @@ class AnalyticsProcessor {
                         k++
                     }
                 }
-                analytics.add(analytics.StructuredAnalytic(dimensionMap, metricMap));
+                analytics.add(StructuredAnalytic(dimensionMap, metricMap));
             }
         }
 
-        return analytics.StructuredAnalytics(analytics);
+        return StructuredAnalytics(analytics)
     }
 }
 

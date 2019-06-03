@@ -16,13 +16,15 @@ class Application {
         val keyFile = getPropertyOrThrow("keyfile")
         val output = File(getPropertyOrThrow("output"))
         output.mkdirs()
+        val startDate = getPropertyOrThrow("startDate")
+        val endDate = getPropertyOrThrow("endDate")
 
         val analyticsProcessor = AnalyticsProcessor()
         val analyticsService = AnalyticsService(keyFile, analyticsProcessor)
 
         val request = AnalyticsRequest(
-            "2019-05-24",
-            "2019-05-30",
+            startDate,
+            endDate,
             setOf(Dimensions.META_DATA, Dimensions.DATE, Dimensions.HOST_URL),
             setOf(Metrics.HITS)
         )

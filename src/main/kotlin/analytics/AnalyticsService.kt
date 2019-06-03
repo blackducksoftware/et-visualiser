@@ -83,7 +83,7 @@ constructor(keyFile: String, analyticsProcessor: AnalyticsProcessor) {
         val excludeCustomersFilter = "${Dimensions.CUSTOMER_ID.id}!~$excludeCustomersPattern"
         val excludeHostsFilter = "${Dimensions.HOST_URL.id}!~$excludeHostsPattern"
 
-        return "$includeCustomersFilter$excludeCustomersFilter$excludeHostsFilter"
+        return "$includeCustomersFilter;$excludeCustomersFilter;$excludeHostsFilter"
     }
 
     // MUST be a single report

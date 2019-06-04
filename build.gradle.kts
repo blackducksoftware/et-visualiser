@@ -37,4 +37,18 @@ shadowJar.apply {
     }
 
     baseName = project.name
+    appendix = ""
+}
+
+tasks.register<JavaExec>("runJar")
+tasks {
+    "runJar" {
+        dependsOn("build")
+    }
+}
+
+tasks.withType<JavaExec> {
+    classpath = files("$buildDir/libs/${project.name}-${project.version}.jar")
+    classpath += sourceSets["main"].runtimeClasspath
+    main = "ApplicationKt"
 }

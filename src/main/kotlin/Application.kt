@@ -14,7 +14,7 @@ open class PropertyNotFound(message: String) : Exception(message)
 class Application {
     init {
         val keyFile = getPropertyOrThrow("ANALYTICS_KEYFILE")
-        val output = File(getPropertyOrThrow("OUTOUT_DIRECTORY"))
+        val output = File(getPropertyOrThrow("OUTPUT_DIRECTORY"))
         output.mkdirs()
         val startDate = getPropertyOrThrow("START_DATE")
         val endDate = getPropertyOrThrow("END_DATE")

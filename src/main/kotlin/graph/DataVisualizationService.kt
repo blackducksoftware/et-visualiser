@@ -3,7 +3,6 @@ package graph
 import tech.tablesaw.api.*
 import tech.tablesaw.columns.AbstractColumn
 import tech.tablesaw.columns.Column
-import tech.tablesaw.plotly.Plot
 import tech.tablesaw.plotly.components.Figure
 import tech.tablesaw.plotly.components.Layout
 import tech.tablesaw.plotly.components.Marker
@@ -24,19 +23,18 @@ class DataVisualizationService {
             } else {
                 return@Comparator event1.groupValue.compareTo(event2.groupValue)
             }
-        })
-            .forEach {
-                detectors.add(it.groupValue)
-                customerCount.add(it.customers)
-                dates.add(it.date)
-            }
+        }).forEach {
+            detectors.add(it.groupValue)
+            customerCount.add(it.customers)
+            dates.add(it.date)
+        }
 
         val detectorsColumn = StringColumn.create(graph.groupLabel, detectors)
         val customerCountColumn = IntColumn.create("Customer Count", customerCount.toIntArray())
         val datesColumn = DateColumn.create("Date", dates)
         val scatterPlot = createScatterPlotFigure(graph, detectorsColumn, customerCountColumn, datesColumn)
 
-        Plot.show(scatterPlot, destination)
+        Plot.generate(figure = scatterPlot, outputFile = destination)
     }
 
     fun customerUsageGraph(data: CustomerUsageGraph, destination: File) {
@@ -57,8 +55,9 @@ class DataVisualizationService {
             .width(1400)
             .height(1000)
             .build()
+        val pieChart = Figure(layout, pieTrace)
 
-        Plot.show(Figure(layout, pieTrace), destination)
+        Plot.generate(figure = pieChart, outputFile = destination)
     }
 
     private fun createPieTrace(detectorsColumn: Column<String>, customerCountColumn: NumberColumn<Int>): PieTrace {
